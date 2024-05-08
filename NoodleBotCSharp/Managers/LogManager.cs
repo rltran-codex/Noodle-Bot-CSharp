@@ -6,6 +6,7 @@ using Serilog.Events;
 using System;
 using System.Threading.Tasks;
 using System.IO;
+using Microsoft.VisualBasic;
 
 namespace NoodleBotCSharp.Managers
 {
@@ -13,11 +14,11 @@ namespace NoodleBotCSharp.Managers
   {
     // Private static instance variable
     private static LogManager _instance;
-
+    private readonly string _logFile;
     private LogManager()
     {
       var logfn = $"noodlebot_{DateTime.Now.ToString("yyyyMMdd")}.txt";
-      var logFile = Path.Combine(
+      _logFile = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
         "NoodleBot",
         "Logs",
@@ -25,11 +26,11 @@ namespace NoodleBotCSharp.Managers
         );
       Log.Logger = new LoggerConfiguration()
         .WriteTo.Console()
-        .WriteTo.File(logFile)
+        .WriteTo.File(_logFile)
         .CreateLogger();
 
       Log.Write(LogEventLevel.Information, "Logger successfully initialized");
-      Log.Write(LogEventLevel.Information, $"Log file can be found at: {logFile}");
+      Log.Write(LogEventLevel.Information, $"Log file can be found at: {_logFile}");
     }
 
     public static LogManager Instance
