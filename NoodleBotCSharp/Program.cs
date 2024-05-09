@@ -2,7 +2,7 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-
+using Lavalink4NET.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -41,6 +41,7 @@ namespace NoodleBotCSharp
         .ConfigureServices((hostingContext, services) =>
         {
           ConfigureBotServices(services);
+          services.AddLavalink();
         })
         .Build();
 
@@ -69,20 +70,18 @@ namespace NoodleBotCSharp
       });
       services.AddSingleton<DiscordSocketClient>();
       services.AddSingleton<CommandService>();
-      services.AddSingleton<CommandHandlingService>();
-
-      // add discord bot slash commands
-      services.AddSingleton<IBotSlashCommand, EchoCommand>();
-      
-      // bot service
-      services.AddHostedService<NoodleBotService>();
       services.Configure<InteractionServiceConfig>(c =>
       {
         c.DefaultRunMode = Discord.Interactions.RunMode.Async;
-        c.LogLevel = LogSeverity.Debug;
       });
       services.AddSingleton<InteractionService>();
 
+      // add discord bot slash commands
+      // services.AddSingleton<IBotSlashCommand, EchoCommand>();
+      // services.AddSingleton<IBotSlashCommand, MusicCommand>();
+      
+      // bot service
+      services.AddHostedService<NoodleBotService>();
     }
   }
 }

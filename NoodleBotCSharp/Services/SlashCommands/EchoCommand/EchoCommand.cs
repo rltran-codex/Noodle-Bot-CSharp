@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using NoodleBotCSharp.Services.SlashCommands;
 using Serilog;
 
+// Demonstration of how to register a SlashCommand service by using the SlashCommandBuilder method
 namespace NoodleBotCSharp.Services.SlashCommands
 {
   public class EchoCommand : IBotSlashCommand
@@ -29,14 +30,20 @@ namespace NoodleBotCSharp.Services.SlashCommands
 
     public async Task SlashCommandHandler(SocketSlashCommand command)
     {
-      SocketSlashCommandData d = command.Data;
-      await command.RespondAsync(
-        text: command.Data.Options
+      var guildUser = (SocketGuildUser)command.User;
+      var text = command.Data.Options
           .Where(o => o.Name == optionMessage)
           .First()
           .Value
-          .ToString()
-      );
+          .ToString();
+
+      var embedBuilder = new EmbedBuilder()
+        .WithAuthor(guildUser.ToString(), guildUser.GetAvatarUrl() ?? guildUser.GetDefaultAvatarUrl())
+        .WithTitle("Echo")
+        .WithDescription(text)
+        .WithColor(Color.LightOrange);
+
+      await command.RespondAsync(embed: embedBuilder.Build());
     }
   }
 }
