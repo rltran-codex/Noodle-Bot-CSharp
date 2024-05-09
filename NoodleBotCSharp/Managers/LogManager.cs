@@ -45,9 +45,9 @@ namespace NoodleBotCSharp.Managers
       }
     }
 
-    public static Task LogAsync(LogMessage msg)
+    public static async Task LogAsync(LogMessage msg)
     {
-      return Task.Run(() =>
+      await Task.Run(() =>
       {
         var severity = msg.Severity switch
         {
