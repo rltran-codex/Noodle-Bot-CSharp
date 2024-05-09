@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using NoodleBotCSharp.Managers;
 
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,7 +72,12 @@ namespace NoodleBotCSharp
         await LogManager.LogAsync(n);
       }
 
-      await _client.SetGameAsync("/help", type: ActivityType.Playing);
+      await _client.SetActivityAsync(new Game(
+        name: "/repo",
+        ActivityType.Watching,
+        ActivityProperties.Join,
+        details: "https://github.com/rltran-codex/Noodle-Bot-CSharp"
+      ));
       LogMessage activityReport = new(LogSeverity.Info, "Ready", $"Activity set to `{_client.Activity.Name}`");
       await LogManager.LogAsync(activityReport);
 
