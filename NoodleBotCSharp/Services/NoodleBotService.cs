@@ -6,9 +6,8 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using NoodleBotCSharp.Managers;
-
 using System;
-using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,6 +42,7 @@ namespace NoodleBotCSharp
       interactionService.Log += LogManager.LogAsync;
       _interactionService = interactionService;
 
+      _client.UserJoined += UserJoinedHandlerAsync;
       _client.Log += LogManager.LogAsync;
       _client.Ready += OnReady;
     }
@@ -102,6 +102,32 @@ namespace NoodleBotCSharp
       await LogManager.LogAsync(msg);
       var interactionContext = new SocketInteractionContext(_client, interaction);
       await _interactionService!.ExecuteCommandAsync(interactionContext, _service);
+    }
+
+    private async Task UserJoinedHandlerAsync(SocketGuildUser newUser)
+    {
+      try
+      {
+        var defaultGuild = _client.Guilds.Where(x => x.Name == "bot-lab").First();
+
+        // assign new user the default role
+        var defaultRole = defaultGuild.Roles.Where(x => x.Name == "Real-Bots").First();
+        await newUser.AddRoleAsync(defaultRole);
+
+        // create welcome message for the new user.
+        var welcomeChannel = defaultGuild.SystemChannel;
+        var embed = new EmbedBuilder()
+            .WithTitle($"Welcome to {defaultGuild.Name}")
+            .WithDescription($"Hello {newUser.Mention}, awesome of you to join us.")
+            .WithAuthor(newUser.Username, newUser.GetDisplayAvatarUrl() ?? newUser.GetDefaultAvatarUrl())
+            .WithColor(Color.DarkTeal)
+            .WithImageUrl("https://i.kym-cdn.com/photos/images/original/001/878/329/dfa.jpg");
+        await welcomeChannel.SendMessageAsync(embed: embed.Build());
+      }
+      catch (Exception)
+      {
+        throw;
+      }
     }
   }
 }

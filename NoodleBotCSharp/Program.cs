@@ -8,21 +8,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using NoodleBotCSharp.Managers;
-using NoodleBotCSharp.Services;
-using NoodleBotCSharp.Services.Commands;
-using NoodleBotCSharp.Services.SlashCommands;
 
 using Serilog;
 
 using System;
 using System.IO;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NoodleBotCSharp
 {
-  internal class Program
+    internal class Program
   {
     // Main entry point for starting the Discord Bot "Noodle Bot"
     private static void Main(string[] args) =>
@@ -41,7 +36,6 @@ namespace NoodleBotCSharp
         .ConfigureServices((hostingContext, services) =>
         {
           ConfigureBotServices(services);
-          services.AddLavalink();
         })
         .Build();
 
@@ -58,16 +52,19 @@ namespace NoodleBotCSharp
 
     private static void ConfigureBotServices(IServiceCollection services)
     {
-      services.AddSingleton<DiscordSocketConfig>(new DiscordSocketConfig()
+      var discConfig = new DiscordSocketConfig()
       {
         GatewayIntents = GatewayIntents.AllUnprivileged,
         LogGatewayIntentWarnings = false,
-      });
+      };
+      discConfig.GatewayIntents |= GatewayIntents.GuildMembers;
+      services.AddSingleton<DiscordSocketConfig>(discConfig);
 
       services.AddLogging(option =>
       {
         option.AddSerilog(Log.Logger);
       });
+      services.AddLavalink();
       services.AddSingleton<DiscordSocketClient>();
       services.AddSingleton<CommandService>();
       services.Configure<InteractionServiceConfig>(c =>
