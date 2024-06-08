@@ -8,16 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using NoodleBotCSharp.Managers;
-using NoodleBotCSharp.Services;
-using NoodleBotCSharp.Services.Commands;
-using NoodleBotCSharp.Services.SlashCommands;
 
 using Serilog;
 
 using System;
 using System.IO;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NoodleBotCSharp
@@ -41,13 +36,12 @@ namespace NoodleBotCSharp
         .ConfigureServices((hostingContext, services) =>
         {
           ConfigureBotServices(services);
-          services.AddLavalink();
         })
         .Build();
 
       try
       {
-        await host.RunAsync();
+        await host.StartAsync();
       }
       catch (Exception ex)
       {
@@ -58,30 +52,50 @@ namespace NoodleBotCSharp
 
     private static void ConfigureBotServices(IServiceCollection services)
     {
-      services.AddSingleton<DiscordSocketConfig>(new DiscordSocketConfig()
+      var discConfig = new DiscordSocketConfig()
       {
         GatewayIntents = GatewayIntents.AllUnprivileged,
         LogGatewayIntentWarnings = false,
-      });
+      };
+      discConfig.GatewayIntents |= GatewayIntents.GuildMembers;
+      services.AddSingleton<DiscordSocketConfig>(discConfig);
 
       services.AddLogging(option =>
       {
         option.AddSerilog(Log.Logger);
       });
       services.AddSingleton<DiscordSocketClient>();
+
       services.AddSingleton<CommandService>();
       services.Configure<InteractionServiceConfig>(c =>
       {
         c.DefaultRunMode = Discord.Interactions.RunMode.Async;
+        c.LogLevel = LogSeverity.Debug;
       });
       services.AddSingleton<InteractionService>();
 
       // add discord bot slash commands
       // services.AddSingleton<IBotSlashCommand, EchoCommand>();
       // services.AddSingleton<IBotSlashCommand, MusicCommand>();
-      
+
       // bot service
       services.AddHostedService<NoodleBotService>();
+
+      // lavalink service
+      // check for the enviornment variables
+      var server = Environment.GetEnvironmentVariable("LAVALINK_SERVER_URI");
+      var pass = Environment.GetEnvironmentVariable("LAVALINK_PASSPHRASE");
+
+      if (!string.IsNullOrEmpty(server) || !string.IsNullOrEmpty(pass))
+      {
+        services.ConfigureLavalink(c =>
+        {
+          c.Label = "Noodle-Bot";
+          c.BaseAddress = new Uri(server);
+          c.Passphrase = pass;
+        });
+      }
+      services.AddLavalink();
     }
   }
 }

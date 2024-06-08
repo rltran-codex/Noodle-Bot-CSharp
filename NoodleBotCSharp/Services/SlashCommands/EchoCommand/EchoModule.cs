@@ -14,7 +14,7 @@ namespace NoodleBotCSharp.Services.Commands.EchoCommand
     [SlashCommand("echo", "Echo an input")]
     public async Task Echo(string input)
     {
-      IUser sentBy = this.Context.User;
+      IUser sentBy = Context.User;
       await RespondAsync($"{sentBy.Mention}: {input}");
     }
 
