@@ -82,7 +82,7 @@ namespace NoodleBotCSharp
       await LogManager.LogAsync(activityReport);
 
       // delete previous commands
-      await _client.Rest.DeleteAllGlobalCommandsAsync();
+      // await _client.Rest.DeleteAllGlobalCommandsAsync();
 
       // register all slash commands
       await _interactionService

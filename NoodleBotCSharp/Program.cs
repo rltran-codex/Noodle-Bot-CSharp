@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace NoodleBotCSharp
 {
-    internal class Program
+  internal class Program
   {
     // Main entry point for starting the Discord Bot "Noodle Bot"
     private static void Main(string[] args) =>
@@ -41,7 +41,7 @@ namespace NoodleBotCSharp
 
       try
       {
-        await host.RunAsync();
+        await host.StartAsync();
       }
       catch (Exception ex)
       {
@@ -64,21 +64,38 @@ namespace NoodleBotCSharp
       {
         option.AddSerilog(Log.Logger);
       });
-      services.AddLavalink();
       services.AddSingleton<DiscordSocketClient>();
+
       services.AddSingleton<CommandService>();
       services.Configure<InteractionServiceConfig>(c =>
       {
         c.DefaultRunMode = Discord.Interactions.RunMode.Async;
+        c.LogLevel = LogSeverity.Debug;
       });
       services.AddSingleton<InteractionService>();
 
       // add discord bot slash commands
       // services.AddSingleton<IBotSlashCommand, EchoCommand>();
       // services.AddSingleton<IBotSlashCommand, MusicCommand>();
-      
+
       // bot service
       services.AddHostedService<NoodleBotService>();
+
+      // lavalink service
+      // check for the enviornment variables
+      var server = Environment.GetEnvironmentVariable("LAVALINK_SERVER_URI");
+      var pass = Environment.GetEnvironmentVariable("LAVALINK_PASSPHRASE");
+
+      if (!string.IsNullOrEmpty(server) || !string.IsNullOrEmpty(pass))
+      {
+        services.ConfigureLavalink(c =>
+        {
+          c.Label = "Noodle-Bot";
+          c.BaseAddress = new Uri(server);
+          c.Passphrase = pass;
+        });
+      }
+      services.AddLavalink();
     }
   }
 }
